@@ -175,6 +175,10 @@ flashcard() {
   echo "$dev_node starting flash....."
   sudo cp -rv "$PATH_IMG_GEN"/update_tools/actcam_update_tool/* "$MNT_PATH"/
   sync
+  sudo cp -rv "$PATH_KERNEL"/arch/arm/boot/uImage "$MNT_PATH"/
+  sync
+  sudo cp -rv "$PATH_KERNEL"/arch/arm/boot/uImage.Raw "$MNT_PATH"/
+  sync
   sudo cp -rv "$PATH_KERNEL"/modules/lib/modules/3.2.7 "$MNT_PATH"/
   sync
   sudo cp -rv "$PATH_IMG_GEN"/driver/video/ait-cam-codec_MV2_ipc_v1.2.5.ko "$MNT_PATH"/
