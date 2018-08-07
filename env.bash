@@ -1,11 +1,13 @@
 TOP="${PWD}"
-PATH_KERNEL="${PWD}/linux-imx"
-PATH_UBOOT="${PWD}/uboot-imx"
-LINUX_ROOTFS=lede-omap-default-rootfs.tar.gz
+PATH_KERNEL="${PWD}/linux"
+PATH_UBOOT="${PWD}/u-boot"
+CROSS_PATH="${PWD}/toolchain/bin"
 
-export PATH="${PATH_UBOOT}/tools:${PATH}"
+export UIMAGE_TYPE=multi
+export UIMAGE_IN=${PATH_KERNEL}/arch/arm/boot/Image:${PATH_KERNEL}/arch/arm/boot/dts/imxrt1050-evk.dtb
+export PATH="${PATH_UBOOT}/tools:$CROSS_PATH:${PATH}"
 export ARCH=arm
-export CROSS_COMPILE="${PWD}/toolchain/bin/arm-linux-gnueabihf-"
+export CROSS_COMPILE=arm-v7-linux-uclibceabi-
 
 # TARGET support: nutsboard pistachio series
 IMX_PATH="./mnt"
@@ -15,17 +17,12 @@ CPU_MODULE=$(echo $MODULE | awk -F. '{print $4}')
 DISPLAY=$(echo $MODULE | awk -F. '{print $5}')
 
 
-if [[ "$CPU_TYPE" == "nutsboard" ]]; then
-    if [[ "$CPU_MODULE" == "pistachio" ]]; then
-        UBOOT_CONFIG='mx6_pistachio_defconfig'
-        KERNEL_IMAGE='zImage'
-        KERNEL_CONFIG='nutsboard_imx_defconfig'
-        DTB_TARGET='imx6q-pistachio.dtb'
-    elif [[ "$CPU_MODULE" == "pistachio-lite" ]]; then
-        UBOOT_CONFIG='mx6_pistachio-lite_defconfig'
-        KERNEL_IMAGE='zImage'
-        KERNEL_CONFIG='nutsboard_imx_defconfig'
-        DTB_TARGET='imx6q-pistachio-lite.dtb'
+if [[ "$CPU_TYPE" == "relajet" ]]; then
+    if [[ "$CPU_MODULE" == "rt1050" ]]; then
+        UBOOT_CONFIG='mxrt105x-evk_defconfig'
+        KERNEL_IMAGE='uImage'
+        KERNEL_CONFIG='relajet_imxrt_defconfig'
+        DTB_TARGET='imxrt1050-evk.dtb'
     fi
 fi
 
@@ -57,11 +54,10 @@ heat() {
             ;;
         "${PATH_KERNEL}"*)
             cd "${PATH_KERNEL}"
-            make "$@" $KERNEL_IMAGE || return $?
-            make "$@" modules || return $?
             make "$@" $DTB_TARGET || return $?
-            rm -rf ./modules
-            make modules_install INSTALL_MOD_PATH=./modules/
+            KCFLAGS=-mno-fdpic make "$@" $KERNEL_IMAGE || return $?
+            #make "$@" $KERNEL_IMAGE || return $?
+            #make -mno-fdpic "$@" $DTB_TARGET || return $?
             ;;
         "${PATH_UBOOT}"*)
             cd "${PATH_UBOOT}"
